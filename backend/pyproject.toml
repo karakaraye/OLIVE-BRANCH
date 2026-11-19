@@ -1,0 +1,16 @@
+[project]
+name = "olive-branch-backend"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "Django>=5.2,<5.3",
+    "djangorestframework>=3.16,<4",
+    "psycopg[binary]>=3.2,<4",
+    "tzdata",
+]
+
+[dependency-groups]
+dev = ["ruff>=0.15,<0.16"]
+
+[tool.ruff.lint]
+extend-select = ["I"]

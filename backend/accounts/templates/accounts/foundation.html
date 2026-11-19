@@ -1,0 +1,9 @@
+{% extends "accounts/base.html" %}
+{% block content %}
+<h1>Foundation records</h1>
+<dl>
+  <dt>Rooms</dt><dd>{{ rooms }}</dd>
+  <dt>Outlets</dt><dd>{{ outlets }}</dd>
+</dl>
+<p><a href="{% url 'staff-home' %}">Staff workspace</a></p>
+{% endblock %}
