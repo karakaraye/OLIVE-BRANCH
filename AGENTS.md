@@ -25,3 +25,4 @@ Follow the [development plan](docs/development-plan.md). Work only on the stage 
 
 - Ship tests with every feature.
 - Run both backend and frontend tests before finishing each task.
+- After every push, check the GitHub Actions run for that commit. If it fails, fix it and push again before reporting done. The human does not run tests manually.

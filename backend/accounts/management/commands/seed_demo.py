@@ -1,15 +1,16 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection, transaction
 
+from accounts.models import StaffProfile
+from accounts.roles import ROLE_SCREENS
 from audit.models import AuditEvent
 from outlets.models import Outlet
 from rooms.models import Room, RoomType
 
-ROLES = ("reception", "cashier", "stores", "accountant", "manager", "owner", "admin")
-FOUNDATION_ROLES = {"accountant", "manager", "owner", "admin"}
+ROLES = tuple(ROLE_SCREENS)
 ROOM_TYPES = (("Standard", 10), ("Deluxe", 6), ("Suite", 4))
 DEMO_PASSWORD = "olive-demo-local-only"
 AFFECTED_RECORD = "demo-fixtures:v1"
@@ -51,19 +52,9 @@ class Command(BaseCommand):
                 "Demo usernames already exist. Reuse the original seed request ID."
             )
 
-        access = Permission.objects.get(
-            content_type__app_label="accounts", codename="access_staff"
-        )
-        review = Permission.objects.get(
-            content_type__app_label="accounts", codename="view_foundation"
-        )
         users = {}
         for role in ROLES:
-            group, _ = Group.objects.get_or_create(name=role)
-            group.permissions.add(access)
-            if role in FOUNDATION_ROLES:
-                group.permissions.add(review)
-
+            group = Group.objects.get(name=role)
             user = user_model.objects.create_user(
                 username=f"demo-{role}", password=DEMO_PASSWORD
             )
@@ -81,6 +72,10 @@ class Command(BaseCommand):
 
         for name in ("Restaurant", "Pool Bar"):
             Outlet.objects.get_or_create(name=name)
+
+        StaffProfile.objects.create(
+            user=users["cashier"], outlet=Outlet.objects.get(name="Restaurant")
+        )
 
         AuditEvent.objects.create(
             request_id=request_id,

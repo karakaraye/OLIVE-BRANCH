@@ -3,6 +3,7 @@
 <h1>Staff sign in</h1>
 <form method="post">
   {% csrf_token %}
+  <input type="hidden" name="request_id" value="{{ request_id }}">
   {{ form.as_p }}
   <input type="hidden" name="next" value="{{ next }}">
   <button type="submit">Sign in</button>

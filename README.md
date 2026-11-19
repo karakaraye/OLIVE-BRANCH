@@ -1,6 +1,6 @@
 # Olive Branch Hotel
 
-This repository contains the Stage 1 development foundation. Django and Django REST Framework handle staff sign-in and permissions. Next.js provides the local staff entry page. PostgreSQL stores the fictional fixtures and append-only audit events.
+This repository contains the Stage 1 development foundation. Django and Django REST Framework enforce staff sessions and permissions. Next.js provides the staff sign-in, role demo, account administration and audit search. PostgreSQL stores the fictional fixtures and append-only audit events.
 
 ## Start on your computer
 
@@ -24,24 +24,26 @@ Keep that terminal open. In a second terminal, from the same repository director
 make frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and select **Staff sign in**. Sign in as `demo-manager` with password `olive-demo-local-only`. Select **Foundation records** to see the 20 fictional rooms and two outlets. Try `demo-reception` with the same password to see the restricted workspace. The review screen and its API return HTTP 403 for reception.
+Open [http://localhost:3000](http://localhost:3000) and sign in. The demo accounts are `demo-reception`, `demo-cashier`, `demo-stores`, `demo-accountant`, `demo-manager`, `demo-owner` and `demo-admin`. All use the password `olive-demo-local-only`. Each role can open its designated screen and try a denied screen to see the server enforce the permission. Demo screens represent access boundaries for future modules. The seeded cashier is assigned to Restaurant.
 
-The other demo accounts are `demo-cashier`, `demo-stores`, `demo-accountant`, `demo-owner`, and `demo-admin`. They share the local demo password. These are Django group memberships. The demo admin has foundation access and is a regular Django user. The production settings disable demo seeding.
+Sign in as `demo-admin` to create named accounts, change roles, assign an outlet to a cashier, or disable and re-enable accounts. Administrative changes require a reason. Use **Search audit events** to filter by actor, affected record, and Africa/Lagos business date. Failed sign-ins show the attempted username as unverified. Sessions expire 30 minutes after sign-in. Disabling an account blocks its next request and revokes old sessions, even if the account is later re-enabled.
+
+The production settings disable demo seeding. The development login, account changes and audit search all work through the Next.js origin. Django validates permissions and CSRF on the server.
 
 Press Ctrl+C in both terminals to stop Django and Next.js. Run `docker compose down` to stop PostgreSQL and retain its data. To use another host database port, export `OLIVE_DB_PORT` before running the Make commands in both terminals.
 
 ### Use the development demo on a trusted LAN
 
-After the first installation, the staff pages, dependencies and assets are served locally. To use another computer on the LAN, substitute the server's LAN address for `192.168.1.10` in the following commands, then open port 3000 on that address in the browser. PostgreSQL stays bound to loopback.
+After initial installation, staff pages and assets are served locally. Substitute your server's LAN address for `192.168.1.10`, then open port 3000 on that address in the browser. Django and PostgreSQL stay on loopback.
 
 ```sh
 # Terminal 1
-DJANGO_ALLOWED_HOSTS=192.168.1.10,localhost,127.0.0.1 make start BACKEND_HOST=0.0.0.0
+DJANGO_ALLOWED_HOSTS=192.168.1.10,localhost,127.0.0.1 make start
 # Terminal 2
-OLIVE_STAFF_ORIGIN=http://192.168.1.10:8000 make frontend FRONTEND_HOST=0.0.0.0
+make frontend FRONTEND_HOST=0.0.0.0
 ```
 
-The LAN commands are for the fictional HTTP demo. A hotel deployment requires local HTTPS, named staff accounts and the production settings. Select `config.settings.prod` with `DJANGO_SETTINGS_MODULE` and provide `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `POSTGRES_PASSWORD`, and the appropriate PostgreSQL connection settings. The production settings enforce HTTPS and secure session and CSRF cookies.
+The example uses HTTP for the fictional LAN demo. A hotel deployment requires local HTTPS, named accounts, and the production settings. Select `config.settings.prod` with `DJANGO_SETTINGS_MODULE` and set `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `POSTGRES_PASSWORD`, and the PostgreSQL connection settings. Keep Django behind a trusted proxy that replaces the forwarded host and protocol headers. If Next.js and Django run on separate hosts, set `OLIVE_BACKEND_ORIGIN` to Django's private origin when building and starting Next.js.
 
 ## Checks and build
 
@@ -68,4 +70,4 @@ docker compose exec -T db psql -U olive_branch -d olive_branch_restore -c \
   'SELECT (SELECT count(*) FROM rooms_room) AS rooms, (SELECT count(*) FROM outlets_outlet) AS outlets, (SELECT count(*) FROM auth_user) AS users, (SELECT count(*) FROM audit_auditevent) AS audit_events;'
 ```
 
-A fresh demo dump should show 20 rooms, two outlets, seven users and one audit event. Switch `POSTGRES_DB` back to your usual database before running the app.
+A fresh demo dump should show 20 rooms, two outlets, seven users and at least the seed audit event. Compare the actual audit count with the source database. Switch `POSTGRES_DB` back to your usual database before running the app.

@@ -8,3 +8,5 @@ ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]").s
     ","
 )
 ALLOW_DEMO_SEED = True
+
+USE_X_FORWARDED_HOST = True

@@ -7,6 +7,7 @@
 {% endif %}
 <form method="post" action="{% url 'staff-logout' %}">
   {% csrf_token %}
+  <input type="hidden" name="request_id" value="{{ request_id }}">
   <button type="submit">Sign out</button>
 </form>
 {% endblock %}
